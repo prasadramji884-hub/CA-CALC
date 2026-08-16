@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>CA Calc</title>
+<meta name="description" content="CA Calc - quick accounting calculator">
+<meta name="theme-color" content="#0b0b0d">
+<meta name="background-color" content="#0b0b0d">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CA Calc">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono&display=swap');
+
+  :root{
+    --bg: #0b0b0d;
+    --key-fn: #26262a;
+    --key-fn-hi: #34343a;
+    --key-digit: #1c1c1f;
+    --key-digit-hi: #2a2a2e;
+    --key-op: #ff9f0a;
+    --key-op-hi: #ffb340;
+    --key-ac: #0a84ff;
+    --key-ac-hi: #3d9dff;
+    --text-light: #ffffff;
+    --text-muted: #8e8e93;
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body{
+    height: 100%;
+    overscroll-behavior: none;
+  }
+
+  body{
+    margin:0;
+    min-height: 100dvh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: var(--bg);
+    font-family:'Inter', sans-serif;
+    padding: 10px;
+    overflow-y: auto;
+  }
+
+  .phone{
+    width: 100%;
+    max-width: 500px;
+    padding: 10px;
+  }
+
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding: 0 6px 6px;
+  }
+  .brand{
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    font-weight:600;
+  }
+  .topbar-right{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+  }
+  #ind-m{
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    font-weight:700;
+    color: var(--key-op);
+    visibility:hidden;
+  }
+  #ind-m.on{ visibility:visible; }
+
+  .steps-count{
+    color: var(--text-muted);
+    font-size: 11px;
+    letter-spacing: 1px;
+    font-weight:700;
+  }
+
+  .display-wrap{
+    padding: 24px 10px 0;
+  }
+  .display{
+    font-variant-numeric: tabular-nums;
+    font-weight: 300;
+    color: var(--text-light);
+    line-height: 1;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-align: right;
+    min-height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .op-indicator{
+    height: 24px;
+    text-align: right;
+    padding: 0 10px 10px;
+    margin-top: -8px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--key-op);
+    opacity: 0;
+    transition: opacity .12s ease;
+  }
+  .op-indicator.show{ opacity: 1; }
+
+  .pad{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  button{
+    border:none;
+    aspect-ratio: 1 / 1;
+    border-radius: 999px;
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size: 16px;
+    cursor:pointer;
+    transition: transform .04s ease, filter .05s ease, box-shadow .05s ease;
+    user-select:none;
+  }
+  button:active{ transform: scale(0.94); filter: brightness(1.35); }
+
+  .digit{ background: var(--key-digit); color: var(--text-light); font-weight:500; font-size:20px;}
+  .digit:active{ background: var(--key-digit-hi); }
+
+  .fn{ background: var(--key-fn); color: var(--text-light); font-size: 13.5px; }
+  .fn:active{ background: var(--key-fn-hi); }
+
+  .op{ background: var(--key-op); color: #1a1200; font-size: 22px; }
+  .op:active{ box-shadow: 0 0 14px 3px rgba(255,159,10,0.75); }
+
+  .ac-btn{ background: var(--key-ac); color: var(--text-light); font-size: 13.5px; }
+  .ac-btn:active{ background: var(--key-ac-hi); box-shadow: 0 0 14px 3px rgba(10,132,255,0.6); }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="topbar">
+    <span class="brand">CA CALC</span>
+    <div class="topbar-right">
+      <span id="ind-m">M</span>
+      <span class="steps-count" id="stepsCount">0 Steps</span>
+    </div>
+  </div>
+
+  <div class="display-wrap">
+    <div class="display" id="display">0</div>
+  </div>
+  <div class="op-indicator" id="opIndicator"></div>
+
+  <div class="pad">
+    <button class="fn" data-fn="plusminus">+/−</button>
+    <button class="fn" data-fn="mplus">M+</button>
+    <button class="fn" data-fn="mminus">M−</button>
+    <button class="fn" data-fn="mrc">MRC</button>
+
+    <button class="ac-btn" data-fn="ac">AC</button>
+    <button class="fn" data-fn="backspace">⌫</button>
+    <button class="fn" data-fn="sqrt">√</button>
+    <button class="op" data-fn="divide">÷</button>
+
+    <button class="digit" data-digit="7">7</button>
+    <button class="digit" data-digit="8">8</button>
+    <button class="digit" data-digit="9">9</button>
+    <button class="op" data-fn="subtract">−</button>
+
+    <button class="digit" data-digit="4">4</button>
+    <button class="digit" data-digit="5">5</button>
+    <button class="digit" data-digit="6">6</button>
+    <button class="op" data-fn="add">+</button>
+
+    <button class="digit" data-digit="1">1</button>
+    <button class="digit" data-digit="2">2</button>
+    <button class="digit" data-digit="3">3</button>
+    <button class="op" data-fn="multiply">×</button>
+
+    <button class="fn" data-fn="percent">%</button>
+    <button class="digit" data-digit="0">0</button>
+    <button class="digit" data-fn="point">.</button>
+    <button class="op" data-fn="equals">=</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const displayEl = document.getElementById('display');
+  const indM = document.getElementById('ind-m');
+  const opIndicatorEl = document.getElementById('opIndicator');
+  const stepsCountEl = document.getElementById('stepsCount');
+
+  const MAX_DIGITS = 12;
+  const opSymbols = { add:'+', subtract:'−', multiply:'×', divide:'÷' };
+
+  let stepCount = 0;
+
+  let display = "0";
+  let firstOperand = null;
+  let operator = null;
+  let waitingForSecond = false;
+
+  let lastOperator = null;
+  let lastOperand = null;
+
+  let memory = 0;
+  let operandStarted = false; // whether the current operand has already counted as a step
+
+  let lastAction = null; // for double-tap detection on MRC
+
+  // ---------- feedback: vibration + click sound (touch/press only) ----------
+  let audioCtx = null;
+  function playClick(){
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = 1200;
+      gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.045);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.05);
+    } catch(e){ /* audio not available */ }
+  }
+  function feedback(){
+    if(navigator.vibrate) navigator.vibrate(12);
+    playClick();
+  }
+
+  function digitCount(s){
+    return s.replace('-','').replace('.','').length;
+  }
+
+  function fitDisplay(){
+    const len = display.length;
+    let size;
+    if(len <= 6) size = 52;
+    else if(len <= 9) size = 38;
+    else size = 28;
+    displayEl.style.fontSize = size + 'px';
+  }
+
+  function updateOpIndicator(){
+    if(operator){
+      opIndicatorEl.textContent = opSymbols[operator];
+      opIndicatorEl.classList.add('show');
+    } else {
+      opIndicatorEl.classList.remove('show');
+    }
+  }
+
+  function updateDisplay(){
+    displayEl.textContent = display;
+    fitDisplay();
+    indM.classList.toggle('on', memory !== 0);
+    updateOpIndicator();
+  }
+
+  function bumpStepCount(){
+    stepCount++;
+    stepsCountEl.textContent = stepCount + ' Steps';
+  }
+
+  // Counts a step only when a NEW operand actually starts being typed —
+  // pressing an operator or equals again with no fresh digits does not count.
+  function markOperandStart(){
+    if(!operandStarted){
+      operandStarted = true;
+      bumpStepCount();
+    }
+  }
+
+  function clearSteps(){
+    stepCount = 0;
+    stepsCountEl.textContent = '0 Steps';
+  }
+
+  function formatNum(n){
+    if(!isFinite(n)) return "Error";
+    if(Object.is(n, -0)) n = 0;
+    let s;
+    if(Number.isInteger(n) && Math.abs(n) < 1e12){
+      s = String(n);
+    } else {
+      s = parseFloat(n.toPrecision(MAX_DIGITS)).toString();
+    }
+    if(digitCount(s) > MAX_DIGITS){
+      s = n.toExponential(6);
+    }
+    return s;
+  }
+
+  function inputDigit(d){
+    markOperandStart();
+    if(waitingForSecond){
+      display = d;
+      waitingForSecond = false;
+      return;
+    }
+    if(digitCount(display) >= MAX_DIGITS) return;
+    display = (display === "0") ? d : display + d;
+  }
+
+  function inputPoint(){
+    markOperandStart();
+    if(waitingForSecond){ display = "0."; waitingForSecond = false; return; }
+    if(!display.includes(".")) display += ".";
+  }
+
+  function backspace(){
+    if(waitingForSecond) return;
+    if(display.length <= 1 || (display.length === 2 && display.startsWith("-"))){
+      display = "0";
+    } else {
+      display = display.slice(0, -1);
+    }
+  }
+
+  function allClear(){
+    display = "0";
+    firstOperand = null;
+    operator = null;
+    waitingForSecond = false;
+    lastOperator = null;
+    lastOperand = null;
+    operandStarted = false;
+    clearSteps();
+  }
+
+  function plusMinus(){
+    if(display === "0") return;
+    display = display.startsWith("-") ? display.slice(1) : "-" + display;
+  }
+
+  function sqrtFn(){
+    const val = Math.sqrt(parseFloat(display));
+    display = formatNum(val);
+  }
+
+  function percentFn(){
+    const cur = parseFloat(display);
+    if(operator && firstOperand !== null){
+      display = formatNum(firstOperand * (cur / 100));
+    } else {
+      display = formatNum(cur / 100);
+    }
+  }
+
+  function chooseOperator(op){
+    const inputVal = parseFloat(display);
+    if(operator && waitingForSecond){
+      operator = op;
+      return;
+    }
+    if(firstOperand === null){
+      firstOperand = inputVal;
+    } else if(operator){
+      firstOperand = compute(firstOperand, inputVal, operator);
+      display = formatNum(firstOperand);
+    }
+    operator = op;
+    waitingForSecond = true;
+    operandStarted = false;
+    lastOperator = null;
+    lastOperand = null;
+  }
+
+  function compute(a, b, op){
+    switch(op){
+      case 'add': return a + b;
+      case 'subtract': return a - b;
+      case 'multiply': return a * b;
+      case 'divide': return b === 0 ? NaN : a / b;
+      default: return b;
+    }
+  }
+
+  // Chain-equals / constant calculation: 2 × = = = = repeats ×2 each time
+  function equals(){
+    bumpStepCount(); // every "=" press counts as a step
+    let result;
+    let a = null, b = null, opUsed = null;
+    if(operator){
+      const inputVal = waitingForSecond ? firstOperand : parseFloat(display);
+      lastOperator = operator;
+      lastOperand = inputVal;
+      a = firstOperand; b = inputVal; opUsed = operator;
+      result = compute(a, b, opUsed);
+    } else if(lastOperator){
+      a = parseFloat(display); b = lastOperand; opUsed = lastOperator;
+      result = compute(a, b, opUsed);
+    } else {
+      result = parseFloat(display);
+    }
+    display = formatNum(result);
+    firstOperand = result;
+    operator = null;
+    waitingForSecond = true;
+    operandStarted = false;
+  }
+
+  // MRC: 1st tap = recall memory to display. 2nd (consecutive) tap = paste the
+  // same recalled result again, then clear memory.
+  function mrc(){
+    if(lastAction === 'mrc'){
+      display = formatNum(memory); // paste result
+      memory = 0;                  // then clear memory
+      lastAction = null;
+    } else {
+      display = formatNum(memory); // recall result
+      waitingForSecond = true;
+      operandStarted = false;
+      lastAction = 'mrc';
+    }
+  }
+
+  function mplus(){
+    memory += parseFloat(display);
+    waitingForSecond = true;
+  }
+
+  function mminus(){
+    memory -= parseFloat(display);
+    waitingForSecond = true;
+  }
+
+  function handle(fn){
+    switch(fn){
+      case 'ac': allClear(); break;
+      case 'backspace': backspace(); break;
+      case 'plusminus': plusMinus(); break;
+      case 'sqrt': sqrtFn(); break;
+      case 'percent': percentFn(); break;
+      case 'add': chooseOperator('add'); break;
+      case 'subtract': chooseOperator('subtract'); break;
+      case 'multiply': chooseOperator('multiply'); break;
+      case 'divide': chooseOperator('divide'); break;
+      case 'equals': equals(); break;
+      case 'mrc': mrc(); break;
+      case 'mplus': mplus(); break;
+      case 'mminus': mminus(); break;
+      case 'point': inputPoint(); break;
+    }
+    if(fn !== 'mrc'){
+      lastAction = fn;
+    }
+    updateDisplay();
+  }
+
+  document.querySelectorAll('button[data-digit]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      feedback();
+      inputDigit(btn.dataset.digit);
+      lastAction = 'digit';
+      updateDisplay();
+    });
+  });
+
+  document.querySelectorAll('button[data-fn]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      feedback();
+      handle(btn.dataset.fn);
+    });
+  });
+
+  updateDisplay();
+})();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+
+</body>
+</html>
