@@ -40,7 +40,7 @@
 
   body{
     margin:0;
-    min-height: 100dvh;
+    height: 100dvh;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -52,8 +52,11 @@
 
   .phone{
     width: 100%;
+    height: 100%;
     max-width: 500px;
     padding: 10px;
+    display: flex;
+    flex-direction: column;
   }
 
   .topbar{
@@ -123,33 +126,51 @@
   .pad{
     display:grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    gap: 0;
+    flex: 1;
+    min-height: 0;
+    align-content: space-evenly;
   }
 
   button{
+    position: relative;
     border:none;
+    background: transparent;
     aspect-ratio: 1 / 1;
-    border-radius: 999px;
+    border-radius: 0;
     font-family:'Inter', sans-serif;
     font-weight:600;
     font-size: 16px;
     cursor:pointer;
-    transition: transform .04s ease, filter .05s ease, box-shadow .05s ease;
     user-select:none;
+    z-index: 0;
+    touch-action: manipulation;
   }
-  button:active{ transform: scale(0.94); filter: brightness(1.35); }
+  button::before{
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    z-index: -1;
+    transition: transform .04s ease, filter .05s ease, box-shadow .05s ease, background .05s ease;
+  }
+  button:active::before{ transform: scale(0.94); filter: brightness(1.35); }
 
-  .digit{ background: var(--key-digit); color: var(--text-light); font-weight:500; font-size:20px;}
-  .digit:active{ background: var(--key-digit-hi); }
+  .digit{ color: var(--text-light); font-weight:500; font-size:20px;}
+  .digit::before{ background: var(--key-digit); }
+  .digit:active::before{ background: var(--key-digit-hi); }
 
-  .fn{ background: var(--key-fn); color: var(--text-light); font-size: 13.5px; }
-  .fn:active{ background: var(--key-fn-hi); }
+  .fn{ color: var(--text-light); font-size: 13.5px; }
+  .fn::before{ background: var(--key-fn); }
+  .fn:active::before{ background: var(--key-fn-hi); }
 
-  .op{ background: var(--key-op); color: #1a1200; font-size: 22px; }
-  .op:active{ box-shadow: 0 0 14px 3px rgba(255,159,10,0.75); }
+  .op{ color: #1a1200; font-size: 22px; }
+  .op::before{ background: var(--key-op); }
+  .op:active::before{ box-shadow: 0 0 14px 3px rgba(255,159,10,0.75); }
 
-  .ac-btn{ background: var(--key-ac); color: var(--text-light); font-size: 13.5px; }
-  .ac-btn:active{ background: var(--key-ac-hi); box-shadow: 0 0 14px 3px rgba(10,132,255,0.6); }
+  .ac-btn{ color: var(--text-light); font-size: 13.5px; }
+  .ac-btn::before{ background: var(--key-ac); }
+  .ac-btn:active::before{ background: var(--key-ac-hi); box-shadow: 0 0 14px 3px rgba(10,132,255,0.6); }
 </style>
 </head>
 <body>
