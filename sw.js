@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ca-calc-v1';
+const CACHE_NAME = 'ca-calc-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -26,6 +26,25 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
+  const isPage = event.request.mode === 'navigate' ||
+                 (event.request.headers.get('accept') || '').includes('text/html');
+
+  // Page/HTML: always try the network first so edits show up immediately.
+  // Only fall back to cache when there's no network (offline).
+  if (isPage) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Static assets (icons, manifest): cache-first for speed, refresh in background.
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const networkFetch = fetch(event.request)
