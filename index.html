@@ -47,7 +47,7 @@
     background: var(--bg);
     font-family:'Inter', sans-serif;
     padding: 10px;
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   .phone{
@@ -126,17 +126,18 @@
   .pad{
     display:grid;
     grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(6, 1fr);
     gap: 0;
     flex: 1;
     min-height: 0;
-    align-content: space-evenly;
+    justify-content: center;
+    align-content: center;
   }
 
   button{
     position: relative;
     border:none;
     background: transparent;
-    aspect-ratio: 1 / 1;
     border-radius: 0;
     font-family:'Inter', sans-serif;
     font-weight:600;
@@ -247,25 +248,9 @@
 
   let lastAction = null; // for double-tap detection on MRC
 
-  // ---------- feedback: vibration + click sound (touch/press only) ----------
-  let audioCtx = null;
-  function playClick(){
-    try{
-      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'square';
-      osc.frequency.value = 1200;
-      gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.045);
-      osc.connect(gain).connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.05);
-    } catch(e){ /* audio not available */ }
-  }
+  // ---------- feedback: vibration only (touch/press) ----------
   function feedback(){
-    if(navigator.vibrate) navigator.vibrate(12);
-    playClick();
+    if(navigator.vibrate) navigator.vibrate(10);
   }
 
   function digitCount(s){
@@ -489,7 +474,8 @@
   }
 
   document.querySelectorAll('button[data-digit]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
+    btn.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
       feedback();
       inputDigit(btn.dataset.digit);
       lastAction = 'digit';
@@ -498,13 +484,39 @@
   });
 
   document.querySelectorAll('button[data-fn]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
+    btn.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
       feedback();
       handle(btn.dataset.fn);
     });
   });
 
   updateDisplay();
+})();
+
+// ---------- auto-fit pad to available space (no scroll, any window size) ----------
+(function(){
+  const pad = document.querySelector('.pad');
+  const COLS = 4, ROWS = 6;
+
+  function layoutPad(){
+    const w = pad.clientWidth;
+    const h = pad.clientHeight;
+    if(w <= 0 || h <= 0) return;
+    const cell = Math.floor(Math.min(w / COLS, h / ROWS));
+    pad.style.gridTemplateColumns = `repeat(${COLS}, ${cell}px)`;
+    pad.style.gridTemplateRows = `repeat(${ROWS}, ${cell}px)`;
+  }
+
+  window.addEventListener('resize', layoutPad);
+  window.addEventListener('orientationchange', layoutPad);
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', layoutPad);
+  }
+  window.addEventListener('load', layoutPad);
+  layoutPad();
+  // second pass after fonts/layout settle
+  setTimeout(layoutPad, 50);
 })();
 
 if('serviceWorker' in navigator){
