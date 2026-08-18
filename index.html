@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<title>CA CALC</title>
+<title>CA Calc</title>
 <meta name="description" content="CA Calc - quick accounting calculator">
 <meta name="theme-color" content="#0b0b0d">
 <meta name="background-color" content="#0b0b0d">
@@ -52,7 +52,6 @@
 
   .phone{
     width: 100%;
-    height: 100%;
     max-width: 500px;
     padding: 10px;
     display: flex;
@@ -128,10 +127,7 @@
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(6, 1fr);
     gap: 0;
-    flex: 1;
-    min-height: 0;
-    justify-content: center;
-    align-content: center;
+    margin: 0 auto;
   }
 
   button{
@@ -494,16 +490,32 @@
   updateDisplay();
 })();
 
-// ---------- auto-fit pad to available space (no scroll, any window size) ----------
+// ---------- auto-fit pad to available space (no dead gap, no scroll) ----------
 (function(){
   const pad = document.querySelector('.pad');
+  const phone = document.querySelector('.phone');
+  const topbar = document.querySelector('.topbar');
+  const displayWrap = document.querySelector('.display-wrap');
+  const opIndicator = document.querySelector('.op-indicator');
   const COLS = 4, ROWS = 6;
 
   function layoutPad(){
-    const w = pad.clientWidth;
-    const h = pad.clientHeight;
-    if(w <= 0 || h <= 0) return;
-    const cell = Math.floor(Math.min(w / COLS, h / ROWS));
+    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+
+    const bodyPadV = 20;   // body padding top+bottom
+    const phonePadV = 20;  // .phone padding top+bottom
+    const bodyPadH = 20;   // body padding left+right
+    const phonePadH = 20;  // .phone padding left+right
+
+    const usedHeight = topbar.offsetHeight + displayWrap.offsetHeight + opIndicator.offsetHeight + bodyPadV + phonePadV;
+    const availH = vh - usedHeight;
+    const availW = Math.min(vw - bodyPadH - phonePadH, 500 - phonePadH);
+
+    const cell = Math.max(1, Math.floor(Math.min(availW / COLS, availH / ROWS)));
+
+    pad.style.width = (cell * COLS) + 'px';
+    pad.style.height = (cell * ROWS) + 'px';
     pad.style.gridTemplateColumns = `repeat(${COLS}, ${cell}px)`;
     pad.style.gridTemplateRows = `repeat(${ROWS}, ${cell}px)`;
   }
@@ -515,7 +527,6 @@
   }
   window.addEventListener('load', layoutPad);
   layoutPad();
-  // second pass after fonts/layout settle
   setTimeout(layoutPad, 50);
 })();
 
