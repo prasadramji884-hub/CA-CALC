@@ -173,6 +173,10 @@
   .op::before{ background: var(--key-op); }
   .op:active::before{ box-shadow: 0 0 14px 3px rgba(255,159,10,0.75); }
 
+  .op-blue{ color: var(--text-light); }
+  .op-blue::before{ background: var(--key-ac); }
+  .op-blue:active::before{ box-shadow: 0 0 14px 3px rgba(10,132,255,0.6); }
+
   .ac-btn{ color: var(--text-light); font-size: 13.5px; }
   .ac-btn::before{ background: var(--key-ac); }
   .ac-btn:active::before{ background: var(--key-ac-hi); box-shadow: 0 0 14px 3px rgba(10,132,255,0.6); }
@@ -213,7 +217,7 @@
     <button class="digit" data-digit="4">4</button>
     <button class="digit" data-digit="5">5</button>
     <button class="digit" data-digit="6">6</button>
-    <button class="op" data-fn="add">+</button>
+    <button class="op op-blue" data-fn="add">+</button>
 
     <button class="digit" data-digit="1">1</button>
     <button class="digit" data-digit="2">2</button>
