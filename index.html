@@ -261,8 +261,32 @@
     return s.replace('-','').replace('.','').length;
   }
 
+  // Indian numbering: last 3 digits together, then groups of 2 before that
+  // (1,00,000 not 100,000). Only used for what's shown on screen — the
+  // raw `display` string stays plain so all the math/parsing keeps working.
+  function formatForDisplay(raw){
+    if(raw === "Error") return raw;
+    if(/e/i.test(raw)) return raw; // exponential notation, leave as-is
+    const neg = raw.startsWith('-');
+    const s = neg ? raw.slice(1) : raw;
+    const dotIdx = s.indexOf('.');
+    const intPart = dotIdx === -1 ? s : s.slice(0, dotIdx);
+    const decPart = dotIdx === -1 ? undefined : s.slice(dotIdx + 1);
+
+    const lastThree = intPart.slice(-3);
+    const other = intPart.slice(0, -3);
+    let formattedInt = lastThree;
+    if(other !== ''){
+      formattedInt = other.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + lastThree;
+    }
+
+    let result = formattedInt;
+    if(decPart !== undefined) result += '.' + decPart;
+    return (neg ? '-' : '') + result;
+  }
+
   function fitDisplay(){
-    const len = display.length;
+    const len = formatForDisplay(display).length;
     let size;
     if(len <= 6) size = 52;
     else if(len <= 9) size = 38;
@@ -280,7 +304,7 @@
   }
 
   function updateDisplay(){
-    displayEl.textContent = display;
+    displayEl.textContent = formatForDisplay(display);
     fitDisplay();
     indM.classList.toggle('on', memory !== 0);
     updateOpIndicator();
