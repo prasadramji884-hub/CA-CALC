@@ -367,13 +367,12 @@
     display = formatNum(val);
   }
 
+  // % just turns the number currently being typed into its /100 fraction
+  // (e.g. 10 -> 0.1). It does NOT touch the pending operator or first
+  // number — so "500 × 10 %" shows 0.1, and only "=" computes 500 × 0.1 = 50.
   function percentFn(){
     const cur = parseFloat(display);
-    if(operator && firstOperand !== null){
-      display = formatNum(firstOperand * (cur / 100));
-    } else {
-      display = formatNum(cur / 100);
-    }
+    display = formatNum(cur / 100);
   }
 
   function chooseOperator(op){
@@ -405,17 +404,24 @@
     }
   }
 
-  // Chain-equals / constant calculation: 2 × = = = = repeats ×2 each time
+  // Chain-equals / constant calculation: 2 × = = = = repeats ×2 each time.
+  // Special case: n ÷ = (no second number typed) gives the reciprocal 1/n,
+  // not n÷n=1. Repeating "=" after that keeps dividing by the original n.
   function equals(){
     bumpStepCount(); // every "=" press counts as a step
     let result;
     let a = null, b = null, opUsed = null;
     if(operator){
-      const inputVal = waitingForSecond ? firstOperand : parseFloat(display);
+      const blankSecond = waitingForSecond;
+      const inputVal = blankSecond ? firstOperand : parseFloat(display);
       lastOperator = operator;
       lastOperand = inputVal;
       a = firstOperand; b = inputVal; opUsed = operator;
-      result = compute(a, b, opUsed);
+      if(opUsed === 'divide' && blankSecond){
+        result = (firstOperand === 0) ? NaN : 1 / firstOperand;
+      } else {
+        result = compute(a, b, opUsed);
+      }
     } else if(lastOperator){
       a = parseFloat(display); b = lastOperand; opUsed = lastOperator;
       result = compute(a, b, opUsed);
