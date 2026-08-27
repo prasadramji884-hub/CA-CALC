@@ -24,14 +24,19 @@
 
 :root{
   --bg:#0b0b0d;
+
   --key-fn:#26262a;
   --key-fn-hi:#34343a;
+
   --key-digit:#1c1c1f;
   --key-digit-hi:#2a2a2e;
+
   --key-op:#ff9f0a;
   --key-op-hi:#ffb340;
+
   --key-ac:#0a84ff;
   --key-ac-hi:#3d9dff;
+
   --text-light:#ffffff;
   --text-muted:#8e8e93;
 }
@@ -57,6 +62,7 @@ body{
   justify-content:center;
 
   background:var(--bg);
+
   font-family:'Inter',sans-serif;
 
   padding-top:max(4px,env(safe-area-inset-top));
@@ -122,32 +128,71 @@ body{
   font-weight:700;
 }
 
+
+/* =========================================================
+   DISPLAY AREA
+========================================================= */
+
 .display-wrap{
   padding:24px 10px 0;
+
   flex-shrink:0;
+
+  /*
+    Fixed dimensions prevent the keypad from moving
+    when the display value changes.
+  */
+  height:86px;
+
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-end;
+
+  overflow:hidden;
 }
 
 .display{
   font-variant-numeric:tabular-nums;
 
   font-weight:300;
+
   color:var(--text-light);
 
   line-height:1;
+
   letter-spacing:.5px;
 
   white-space:nowrap;
+
   overflow:hidden;
 
   text-align:right;
 
+  /*
+    IMPORTANT:
+    Fixed height prevents result-area jumping/flickering.
+  */
+  width:100%;
+  height:62px;
   min-height:62px;
 
   display:flex;
   align-items:center;
   justify-content:flex-end;
 
-  transition:font-size .08s ease;
+  /*
+    No CSS transition on font-size.
+    This was one of the causes of the visible flicker.
+  */
+  transition:none;
+
+  /*
+    Keep the display on its own compositing layer.
+  */
+  transform:translateZ(0);
+  backface-visibility:hidden;
+
+  contain:layout paint;
 }
 
 .op-indicator{
@@ -166,7 +211,7 @@ body{
 
   opacity:0;
 
-  transition:opacity .12s ease;
+  transition:opacity .08s ease;
 
   flex-shrink:0;
 }
@@ -174,6 +219,11 @@ body{
 .op-indicator.show{
   opacity:1;
 }
+
+
+/* =========================================================
+   KEYPAD
+========================================================= */
 
 .pad{
   display:grid;
@@ -242,6 +292,7 @@ button::before{
 
 button:active::before{
   transform:translate(-50%,-50%) scale(.94);
+
   filter:brightness(1.35);
 }
 
@@ -313,24 +364,37 @@ button:focus-visible::before{
 
 .ac-btn:active::before{
   background:var(--key-ac-hi);
-  box-shadow:0 0 14px 3px rgba(10,132,255,.6);
+
+  box-shadow:
+    0 0 14px 3px rgba(10,132,255,.6);
 }
 
+
+/* =========================================================
+   SMALL SCREEN
+========================================================= */
+
 @media (max-height:600px){
+
   .display-wrap{
     padding-top:10px;
+    height:70px;
   }
 
   .display{
+    height:48px;
     min-height:48px;
   }
 
   .op-indicator{
     height:18px;
   }
+
 }
 
+
 @media (max-width:340px){
+
   .brand,
   #ind-m,
   .steps-count{
@@ -340,9 +404,11 @@ button:focus-visible::before{
   .topbar-right{
     gap:7px;
   }
+
 }
 </style>
 </head>
+
 
 <body>
 
@@ -364,11 +430,18 @@ button:focus-visible::before{
 
   </div>
 
+
   <div class="display-wrap">
-    <div class="display" id="display">0</div>
+
+    <div class="display" id="display">
+      0
+    </div>
+
   </div>
 
+
   <div class="op-indicator" id="opIndicator"></div>
+
 
   <div class="pad">
 
@@ -406,10 +479,12 @@ button:focus-visible::before{
 
 </div>
 
+
 <script>
 (function(){
 
 'use strict';
+
 
 /* =========================================================
    DOM
@@ -443,7 +518,7 @@ const opSymbols = {
 
 
 /* =========================================================
-   CALCULATOR STATE
+   STATE
 ========================================================= */
 
 let display = "0";
@@ -455,56 +530,40 @@ let operator = null;
 let waitingForSecond = false;
 
 /*
-  TRUE only when an operator has been selected
-  and the user has NOT supplied a second operand.
+  TRUE = operator selected but second operand
+  has not actually been supplied.
 
-  Important:
-  √ and % set this to FALSE because they create
+  √ and % make this FALSE because they create
   a real operand.
 */
 let freshOperand = false;
 
 
-/*
-  Used for repeated equals.
-*/
-
+/* Repeated equals */
 let lastOperator = null;
 let lastOperand = null;
 
 
-/*
-  After "=" we remember that display is a result.
-  Typing a digit starts a fresh calculation.
-*/
+/* Result state */
 let justCalculated = false;
 
 
-/* =========================================================
-   MEMORY
-========================================================= */
-
+/* Memory */
 let memory = 0;
 
 
-/* =========================================================
-   STEPS
-========================================================= */
-
+/* Steps */
 let stepCount = 0;
 let operandStarted = false;
 
 
-/* =========================================================
-   OTHER STATE
-========================================================= */
-
+/* Other */
 let lastAction = null;
 let errorState = false;
 
 
 /* =========================================================
-   FEEDBACK
+   HAPTIC
 ========================================================= */
 
 function feedback(){
@@ -515,7 +574,9 @@ function feedback(){
       navigator.vibrate &&
       typeof navigator.vibrate === 'function'
     ){
+
       navigator.vibrate(10);
+
     }
 
   }catch(e){}
@@ -530,18 +591,22 @@ function feedback(){
 function digitCount(value){
 
   return String(value)
-    .replace('-', '')
-    .replace('.', '')
-    .replace(/[eE][+-]?\d+$/, '')
+    .replace('-','')
+    .replace('.','')
+    .replace(/[eE][+-]?\d+$/,'')
     .length;
 
 }
 
 
+/* =========================================================
+   INDIAN NUMBER FORMAT
+========================================================= */
+
 function formatForDisplay(raw){
 
   if(raw === "Error"){
-    return raw;
+    return "Error";
   }
 
   if(/e/i.test(raw)){
@@ -552,7 +617,9 @@ function formatForDisplay(raw){
     raw.startsWith('-');
 
   const value =
-    negative ? raw.slice(1) : raw;
+    negative
+      ? raw.slice(1)
+      : raw;
 
   const dotIndex =
     value.indexOf('.');
@@ -582,7 +649,9 @@ function formatForDisplay(raw){
       other.replace(
         /\B(?=(\d{2})+(?!\d))/g,
         ','
-      ) + ',' + lastThree;
+      ) +
+      ',' +
+      lastThree;
 
   }
 
@@ -590,42 +659,15 @@ function formatForDisplay(raw){
     formattedInt;
 
   if(decimalPart !== null){
-    result += '.' + decimalPart;
+
+    result +=
+      '.' + decimalPart;
+
   }
 
   return negative
     ? '-' + result
     : result;
-
-}
-
-
-/* =========================================================
-   DISPLAY SIZE
-========================================================= */
-
-function fitDisplay(){
-
-  const len =
-    formatForDisplay(display).length;
-
-  let size;
-
-  if(len <= 6){
-    size = 52;
-  }
-  else if(len <= 9){
-    size = 38;
-  }
-  else if(len <= 12){
-    size = 32;
-  }
-  else{
-    size = 27;
-  }
-
-  displayEl.style.fontSize =
-    size + 'px';
 
 }
 
@@ -660,7 +702,9 @@ function formatNum(n){
   }
 
   if(Number.isInteger(n)){
+
     return String(n);
+
   }
 
   return parseFloat(
@@ -671,7 +715,71 @@ function formatNum(n){
 
 
 /* =========================================================
-   UI
+   DISPLAY FONT SIZE
+========================================================= */
+
+/*
+  IMPORTANT FIX:
+
+  - No CSS transition
+  - No unnecessary font-size assignment
+  - Fixed display container
+  - Only updates size when required
+*/
+
+let currentDisplaySize = '';
+
+function fitDisplay(){
+
+  const len =
+    formatForDisplay(display).length;
+
+  let size;
+
+  if(len <= 6){
+
+    size = 52;
+
+  }
+  else if(len <= 9){
+
+    size = 38;
+
+  }
+  else if(len <= 12){
+
+    size = 32;
+
+  }
+  else if(len <= 15){
+
+    size = 29;
+
+  }
+  else{
+
+    size = 25;
+
+  }
+
+  const newSize =
+    size + 'px';
+
+  if(currentDisplaySize !== newSize){
+
+    currentDisplaySize =
+      newSize;
+
+    displayEl.style.fontSize =
+      newSize;
+
+  }
+
+}
+
+
+/* =========================================================
+   OPERATOR INDICATOR
 ========================================================= */
 
 function updateOpIndicator(){
@@ -696,7 +804,16 @@ function updateOpIndicator(){
 }
 
 
+/* =========================================================
+   UPDATE UI
+========================================================= */
+
 function updateDisplay(){
+
+  /*
+    textContent update only.
+    Container dimensions never change.
+  */
 
   displayEl.textContent =
     formatForDisplay(display);
@@ -751,7 +868,7 @@ function clearSteps(){
 
 
 /* =========================================================
-   ERROR
+   ERROR HANDLING
 ========================================================= */
 
 function recoverFromError(){
@@ -803,18 +920,20 @@ function showError(){
 
 
 /* =========================================================
-   DIGIT INPUT
+   DIGIT
 ========================================================= */
 
 function inputDigit(d){
 
   if(errorState){
+
     recoverFromError();
+
   }
 
 
   /*
-    After "=" a new digit starts a new calculation.
+    New digit after result starts fresh calculation.
   */
 
   if(justCalculated){
@@ -845,8 +964,8 @@ function inputDigit(d){
 
 
   /*
-    After operator / √ / % / MRC,
-    a digit replaces the display.
+    Operator / sqrt / percent / memory result:
+    replace display.
   */
 
   if(waitingForSecond){
@@ -864,6 +983,15 @@ function inputDigit(d){
   if(display === "0"){
 
     display = d;
+
+    return;
+
+  }
+
+
+  if(display === "-0"){
+
+    display = "-" + d;
 
     return;
 
@@ -889,7 +1017,9 @@ function inputDigit(d){
 function inputPoint(){
 
   if(errorState){
+
     recoverFromError();
+
   }
 
 
@@ -955,14 +1085,17 @@ function backspace(){
 
   }
 
+
   if(justCalculated){
 
     display = "0";
+
     justCalculated = false;
 
     return;
 
   }
+
 
   if(waitingForSecond){
 
@@ -993,7 +1126,7 @@ function backspace(){
 
 
 /* =========================================================
-   ALL CLEAR
+   AC
 ========================================================= */
 
 function allClear(){
@@ -1027,18 +1160,20 @@ function allClear(){
 function plusMinus(){
 
   if(errorState){
+
     recoverFromError();
+
   }
 
 
   /*
-    If operator is waiting and no second operand exists,
-    create a negative zero as the pending operand.
+    Operator selected, second operand empty.
 
-    Example:
     400 + +/- 600 =
-    -> 400 + (-600)
-    -> -200
+
+    becomes
+
+    400 + (-600)
   */
 
   if(
@@ -1092,12 +1227,15 @@ function plusMinus(){
 function sqrtFn(){
 
   if(errorState){
+
     recoverFromError();
+
   }
 
 
   const value =
     Number(display);
+
 
   if(!Number.isFinite(value)){
 
@@ -1126,19 +1264,15 @@ function sqrtFn(){
 
 
   /*
-    IMPORTANT:
-
     √ creates a REAL operand.
 
-    So:
-    5 - 9 √ =
-    becomes
-    5 - 3 =
-    -> 2
+    Example:
 
-    We keep waitingForSecond TRUE so typing a new
-    digit can replace the result, but freshOperand
-    is FALSE so "=" uses the √ result.
+    5 − 9 √ =
+
+    9 √ = 3
+
+    5 − 3 = 2
   */
 
   waitingForSecond = true;
@@ -1159,12 +1293,15 @@ function sqrtFn(){
 function percentFn(){
 
   if(errorState){
+
     recoverFromError();
+
   }
 
 
   const current =
     Number(display);
+
 
   if(!Number.isFinite(current)){
 
@@ -1177,13 +1314,6 @@ function percentFn(){
 
   let result;
 
-
-  /*
-    + / -
-
-    1000 + 50% = 1500
-    1000 - 10% = 900
-  */
 
   if(
     (
@@ -1198,14 +1328,6 @@ function percentFn(){
       (current / 100);
 
   }
-
-  /*
-    × / ÷
-
-    500 × 10% = 50
-    500 ÷ 10% = 5000
-  */
-
   else{
 
     result =
@@ -1226,10 +1348,6 @@ function percentFn(){
   display =
     formatNum(result);
 
-  /*
-    % also creates a real operand.
-  */
-
   waitingForSecond = true;
 
   freshOperand = false;
@@ -1248,19 +1366,14 @@ function percentFn(){
 function chooseOperator(op){
 
   if(errorState){
+
     recoverFromError();
+
   }
 
 
   /*
-    If the previous operation was completed with "=",
-    continue from the result.
-
-    Example:
-    5 = + 3 =
-
-    should work as:
-    5 + 3
+    Continue from result.
   */
 
   if(justCalculated){
@@ -1290,7 +1403,7 @@ function chooseOperator(op){
 
 
   /*
-    Change operator before entering second operand.
+    Change operator before second operand.
 
     10 + ×
 
@@ -1323,11 +1436,11 @@ function chooseOperator(op){
   }
 
   /*
-    Chain calculation.
+    Chain operation.
 
-    Example:
     10 + 20 +
-    -> 30 +
+
+    => 30 +
   */
 
   else if(operator){
@@ -1406,7 +1519,9 @@ function compute(a,b,op){
     case 'divide':
 
       if(b === 0){
+
         return NaN;
+
       }
 
       return a / b;
@@ -1444,23 +1559,27 @@ function equals(){
 
   if(operator){
 
-    /*
-      If freshOperand is TRUE:
-      no real second operand exists.
-
-      Example:
-      5 + =
-      -> 10
-
-      But after √:
-      5 - 9 √ =
-      freshOperand is FALSE,
-      so 3 is correctly used.
-    */
-
     const blankSecond =
       freshOperand;
 
+
+    /*
+      IMPORTANT:
+
+      If √ or % was used:
+
+      freshOperand = false
+
+      so display is used.
+
+      Example:
+
+      5 − 9 √ =
+
+      display = 3
+
+      => 5 − 3
+    */
 
     const inputVal =
       blankSecond
@@ -1485,9 +1604,11 @@ function equals(){
 
 
     /*
-      Special:
+      Special case:
+
       5 ÷ =
-      -> 1/5
+
+      => 0.2
     */
 
     if(
@@ -1523,15 +1644,6 @@ function equals(){
 
   /*
     REPEATED EQUALS
-
-    2 × 3 =
-    6
-
-    =
-    18
-
-    =
-    54
   */
 
   else if(lastOperator){
@@ -1560,7 +1672,7 @@ function equals(){
 
 
   /*
-    NO OPERATOR
+    NO OPERATION
   */
 
   else{
@@ -1605,13 +1717,15 @@ function equals(){
 
 
 /* =========================================================
-   MEMORY PLUS
+   MEMORY +
 ========================================================= */
 
 function mplus(){
 
   if(errorState){
+
     recoverFromError();
+
   }
 
 
@@ -1647,13 +1761,15 @@ function mplus(){
 
 
 /* =========================================================
-   MEMORY MINUS
+   MEMORY -
 ========================================================= */
 
 function mminus(){
 
   if(errorState){
+
     recoverFromError();
+
   }
 
 
@@ -1726,6 +1842,7 @@ function mrc(){
     formatNum(memory);
 
   waitingForSecond = true;
+
   freshOperand = false;
 
   operandStarted = false;
@@ -1738,7 +1855,7 @@ function mrc(){
 
 
 /* =========================================================
-   HANDLER
+   MAIN HANDLER
 ========================================================= */
 
 function handle(fn){
@@ -1875,7 +1992,7 @@ document
 
 
 /* =========================================================
-   KEYBOARD
+   KEYBOARD SUPPORT
 ========================================================= */
 
 document.addEventListener(
