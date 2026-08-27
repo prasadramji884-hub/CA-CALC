@@ -3,202 +3,375 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+
 <title>CA Calc</title>
+
 <meta name="description" content="CA Calc - quick accounting calculator">
 <meta name="theme-color" content="#0b0b0d">
 <meta name="background-color" content="#0b0b0d">
+
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-192.png">
+
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CA Calc">
 <meta name="mobile-web-app-capable" content="yes">
+
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono&display=swap');
 
-  :root{
-    --bg: #0b0b0d;
-    --key-fn: #26262a;
-    --key-fn-hi: #34343a;
-    --key-digit: #1c1c1f;
-    --key-digit-hi: #2a2a2e;
-    --key-op: #ff9f0a;
-    --key-op-hi: #ffb340;
-    --key-ac: #0a84ff;
-    --key-ac-hi: #3d9dff;
-    --text-light: #ffffff;
-    --text-muted: #8e8e93;
-  }
+:root{
+  --bg:#0b0b0d;
+  --key-fn:#26262a;
+  --key-fn-hi:#34343a;
+  --key-digit:#1c1c1f;
+  --key-digit-hi:#2a2a2e;
+  --key-op:#ff9f0a;
+  --key-op-hi:#ffb340;
+  --key-ac:#0a84ff;
+  --key-ac-hi:#3d9dff;
+  --text-light:#ffffff;
+  --text-muted:#8e8e93;
+}
 
-  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
 
-  html, body{
-    height: 100%;
-    overscroll-behavior: none;
-  }
+html,
+body{
+  width:100%;
+  height:100%;
+  overscroll-behavior:none;
+}
 
-  body{
-    margin:0;
-    height: 100dvh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background: var(--bg);
-    font-family:'Inter', sans-serif;
-    padding: 4px;
-    overflow: hidden;
-  }
+body{
+  margin:0;
+  min-height:100dvh;
 
-  .phone{
-    width: 100%;
-    height: 100%;
-    max-width: 500px;
-    padding: 4px;
-    display: flex;
-    flex-direction: column;
-  }
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-  .topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding: 0 6px 6px;
-  }
-  .brand{
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    color: var(--text-muted);
-    font-weight:600;
-  }
-  .topbar-right{
-    display:flex;
-    align-items:center;
-    gap: 10px;
-  }
-  #ind-m{
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    font-weight:700;
-    color: var(--key-op);
-    visibility:hidden;
-  }
-  #ind-m.on{ visibility:visible; }
+  background:var(--bg);
+  font-family:'Inter',sans-serif;
 
-  .steps-count{
-    color: var(--text-muted);
-    font-size: 11px;
-    letter-spacing: 1px;
-    font-weight:700;
-  }
+  padding-top:max(4px,env(safe-area-inset-top));
+  padding-right:max(4px,env(safe-area-inset-right));
+  padding-bottom:max(4px,env(safe-area-inset-bottom));
+  padding-left:max(4px,env(safe-area-inset-left));
 
+  overflow:hidden;
+}
+
+.phone{
+  width:100%;
+  height:100%;
+  max-width:500px;
+
+  padding:4px;
+
+  display:flex;
+  flex-direction:column;
+
+  min-height:0;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:0 6px 6px;
+
+  flex-shrink:0;
+}
+
+.brand{
+  font-size:11px;
+  letter-spacing:1.5px;
+  color:var(--text-muted);
+  font-weight:600;
+}
+
+.topbar-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+#ind-m{
+  font-size:11px;
+  letter-spacing:1.5px;
+  font-weight:700;
+  color:var(--key-op);
+  visibility:hidden;
+}
+
+#ind-m.on{
+  visibility:visible;
+}
+
+.steps-count{
+  color:var(--text-muted);
+  font-size:11px;
+  letter-spacing:1px;
+  font-weight:700;
+}
+
+.display-wrap{
+  padding:24px 10px 0;
+  flex-shrink:0;
+}
+
+.display{
+  font-variant-numeric:tabular-nums;
+
+  font-weight:300;
+  color:var(--text-light);
+
+  line-height:1;
+  letter-spacing:.5px;
+
+  white-space:nowrap;
+  overflow:hidden;
+
+  text-align:right;
+
+  min-height:62px;
+
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+
+  transition:font-size .08s ease;
+}
+
+.op-indicator{
+  height:24px;
+
+  text-align:right;
+
+  padding:0 10px 10px;
+
+  margin-top:-8px;
+
+  font-size:20px;
+  font-weight:700;
+
+  color:var(--key-op);
+
+  opacity:0;
+
+  transition:opacity .12s ease;
+
+  flex-shrink:0;
+}
+
+.op-indicator.show{
+  opacity:1;
+}
+
+.pad{
+  display:grid;
+
+  grid-template-columns:repeat(4,1fr);
+  grid-template-rows:repeat(6,1fr);
+
+  gap:0;
+
+  flex:1;
+
+  min-height:0;
+  min-width:0;
+}
+
+button{
+  position:relative;
+
+  border:none;
+  background:transparent;
+
+  border-radius:0;
+
+  font-family:'Inter',sans-serif;
+
+  font-weight:600;
+  font-size:16px;
+
+  cursor:pointer;
+
+  user-select:none;
+  -webkit-user-select:none;
+
+  z-index:0;
+
+  touch-action:manipulation;
+
+  container-type:size;
+
+  outline:none;
+}
+
+button::before{
+  content:'';
+
+  position:absolute;
+
+  top:50%;
+  left:50%;
+
+  width:min(90cqw,90cqh);
+  height:min(90cqw,90cqh);
+
+  transform:translate(-50%,-50%);
+
+  border-radius:50%;
+
+  z-index:-1;
+
+  transition:
+    transform .04s ease,
+    filter .05s ease,
+    box-shadow .05s ease,
+    background .05s ease;
+}
+
+button:active::before{
+  transform:translate(-50%,-50%) scale(.94);
+  filter:brightness(1.35);
+}
+
+button:focus-visible::before{
+  outline:2px solid rgba(255,255,255,.35);
+  outline-offset:3px;
+}
+
+.digit{
+  color:var(--text-light);
+  font-weight:500;
+  font-size:20px;
+}
+
+.digit::before{
+  background:var(--key-digit);
+}
+
+.digit:active::before{
+  background:var(--key-digit-hi);
+}
+
+.fn{
+  color:var(--text-light);
+  font-size:13.5px;
+}
+
+.fn::before{
+  background:var(--key-fn);
+}
+
+.fn:active::before{
+  background:var(--key-fn-hi);
+}
+
+.op{
+  color:#1a1200;
+  font-size:22px;
+}
+
+.op::before{
+  background:var(--key-op);
+}
+
+.op:active::before{
+  box-shadow:0 0 14px 3px rgba(255,159,10,.75);
+}
+
+.op-blue{
+  color:var(--text-light);
+}
+
+.op-blue::before{
+  background:var(--key-ac);
+}
+
+.op-blue:active::before{
+  box-shadow:0 0 14px 3px rgba(10,132,255,.6);
+}
+
+.ac-btn{
+  color:var(--text-light);
+  font-size:13.5px;
+}
+
+.ac-btn::before{
+  background:var(--key-ac);
+}
+
+.ac-btn:active::before{
+  background:var(--key-ac-hi);
+  box-shadow:0 0 14px 3px rgba(10,132,255,.6);
+}
+
+@media (max-height:600px){
   .display-wrap{
-    padding: 24px 10px 0;
+    padding-top:10px;
   }
+
   .display{
-    font-variant-numeric: tabular-nums;
-    font-weight: 300;
-    color: var(--text-light);
-    line-height: 1;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-align: right;
-    min-height: 62px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
+    min-height:48px;
   }
 
   .op-indicator{
-    height: 24px;
-    text-align: right;
-    padding: 0 10px 10px;
-    margin-top: -8px;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--key-op);
-    opacity: 0;
-    transition: opacity .12s ease;
+    height:18px;
   }
-  .op-indicator.show{ opacity: 1; }
+}
 
-  .pad{
-    display:grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(6, 1fr);
-    gap: 0;
-    flex: 1;
-    min-height: 0;
-    min-width: 0;
+@media (max-width:340px){
+  .brand,
+  #ind-m,
+  .steps-count{
+    font-size:9px;
   }
 
-  button{
-    position: relative;
-    border:none;
-    background: transparent;
-    border-radius: 0;
-    font-family:'Inter', sans-serif;
-    font-weight:600;
-    font-size: 16px;
-    cursor:pointer;
-    user-select:none;
-    z-index: 0;
-    touch-action: manipulation;
-    container-type: size;
+  .topbar-right{
+    gap:7px;
   }
-  button::before{
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: min(90cqw, 90cqh);
-    height: min(90cqw, 90cqh);
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    z-index: -1;
-    transition: transform .04s ease, filter .05s ease, box-shadow .05s ease, background .05s ease;
-  }
-  button:active::before{ transform: translate(-50%, -50%) scale(0.94); filter: brightness(1.35); }
-
-  .digit{ color: var(--text-light); font-weight:500; font-size:20px;}
-  .digit::before{ background: var(--key-digit); }
-  .digit:active::before{ background: var(--key-digit-hi); }
-
-  .fn{ color: var(--text-light); font-size: 13.5px; }
-  .fn::before{ background: var(--key-fn); }
-  .fn:active::before{ background: var(--key-fn-hi); }
-
-  .op{ color: #1a1200; font-size: 22px; }
-  .op::before{ background: var(--key-op); }
-  .op:active::before{ box-shadow: 0 0 14px 3px rgba(255,159,10,0.75); }
-
-  .op-blue{ color: var(--text-light); }
-  .op-blue::before{ background: var(--key-ac); }
-  .op-blue:active::before{ box-shadow: 0 0 14px 3px rgba(10,132,255,0.6); }
-
-  .ac-btn{ color: var(--text-light); font-size: 13.5px; }
-  .ac-btn::before{ background: var(--key-ac); }
-  .ac-btn:active::before{ background: var(--key-ac-hi); box-shadow: 0 0 14px 3px rgba(10,132,255,0.6); }
+}
 </style>
 </head>
+
 <body>
 
 <div class="phone">
+
   <div class="topbar">
+
     <span class="brand">CA CALC</span>
+
     <div class="topbar-right">
+
       <span id="ind-m">M</span>
-      <span class="steps-count" id="stepsCount">0 Steps</span>
+
+      <span class="steps-count" id="stepsCount">
+        0 Steps
+      </span>
+
     </div>
+
   </div>
 
   <div class="display-wrap">
     <div class="display" id="display">0</div>
   </div>
+
   <div class="op-indicator" id="opIndicator"></div>
 
   <div class="pad">
+
     <button class="fn" data-fn="plusminus">+/−</button>
     <button class="fn" data-fn="mplus">M+</button>
     <button class="fn" data-fn="mminus">M−</button>
@@ -228,315 +401,1658 @@
     <button class="digit" data-digit="0">0</button>
     <button class="digit" data-fn="point">.</button>
     <button class="op" data-fn="equals">=</button>
+
   </div>
+
 </div>
 
 <script>
 (function(){
-  const displayEl = document.getElementById('display');
-  const indM = document.getElementById('ind-m');
-  const opIndicatorEl = document.getElementById('opIndicator');
-  const stepsCountEl = document.getElementById('stepsCount');
 
-  const MAX_DIGITS = 12;
-  const opSymbols = { add:'+', subtract:'−', multiply:'×', divide:'÷' };
+'use strict';
 
-  let stepCount = 0;
+/* =========================================================
+   DOM
+========================================================= */
 
-  let display = "0";
-  let firstOperand = null;
-  let operator = null;
-  let waitingForSecond = false;
+const displayEl =
+  document.getElementById('display');
 
-  let lastOperator = null;
-  let lastOperand = null;
+const indM =
+  document.getElementById('ind-m');
 
-  let memory = 0;
-  let operandStarted = false; // whether the current operand has already counted as a step
+const opIndicatorEl =
+  document.getElementById('opIndicator');
 
-  let lastAction = null; // for double-tap detection on MRC
+const stepsCountEl =
+  document.getElementById('stepsCount');
 
-  // ---------- feedback: vibration only (touch/press) ----------
-  function feedback(){
-    if(navigator.vibrate) navigator.vibrate(10);
-  }
 
-  function digitCount(s){
-    return s.replace('-','').replace('.','').length;
-  }
+/* =========================================================
+   CONSTANTS
+========================================================= */
 
-  // Indian numbering: last 3 digits together, then groups of 2 before that
-  // (1,00,000 not 100,000). Only used for what's shown on screen — the
-  // raw `display` string stays plain so all the math/parsing keeps working.
-  function formatForDisplay(raw){
-    if(raw === "Error") return raw;
-    if(/e/i.test(raw)) return raw; // exponential notation, leave as-is
-    const neg = raw.startsWith('-');
-    const s = neg ? raw.slice(1) : raw;
-    const dotIdx = s.indexOf('.');
-    const intPart = dotIdx === -1 ? s : s.slice(0, dotIdx);
-    const decPart = dotIdx === -1 ? undefined : s.slice(dotIdx + 1);
+const MAX_DIGITS = 12;
 
-    const lastThree = intPart.slice(-3);
-    const other = intPart.slice(0, -3);
-    let formattedInt = lastThree;
-    if(other !== ''){
-      formattedInt = other.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + lastThree;
+const opSymbols = {
+  add:'+',
+  subtract:'−',
+  multiply:'×',
+  divide:'÷'
+};
+
+
+/* =========================================================
+   CALCULATOR STATE
+========================================================= */
+
+let display = "0";
+
+let firstOperand = null;
+
+let operator = null;
+
+let waitingForSecond = false;
+
+/*
+  TRUE only when an operator has been selected
+  and the user has NOT supplied a second operand.
+
+  Important:
+  √ and % set this to FALSE because they create
+  a real operand.
+*/
+let freshOperand = false;
+
+
+/*
+  Used for repeated equals.
+*/
+
+let lastOperator = null;
+let lastOperand = null;
+
+
+/*
+  After "=" we remember that display is a result.
+  Typing a digit starts a fresh calculation.
+*/
+let justCalculated = false;
+
+
+/* =========================================================
+   MEMORY
+========================================================= */
+
+let memory = 0;
+
+
+/* =========================================================
+   STEPS
+========================================================= */
+
+let stepCount = 0;
+let operandStarted = false;
+
+
+/* =========================================================
+   OTHER STATE
+========================================================= */
+
+let lastAction = null;
+let errorState = false;
+
+
+/* =========================================================
+   FEEDBACK
+========================================================= */
+
+function feedback(){
+
+  try{
+
+    if(
+      navigator.vibrate &&
+      typeof navigator.vibrate === 'function'
+    ){
+      navigator.vibrate(10);
     }
 
-    let result = formattedInt;
-    if(decPart !== undefined) result += '.' + decPart;
-    return (neg ? '-' : '') + result;
+  }catch(e){}
+
+}
+
+
+/* =========================================================
+   NUMBER HELPERS
+========================================================= */
+
+function digitCount(value){
+
+  return String(value)
+    .replace('-', '')
+    .replace('.', '')
+    .replace(/[eE][+-]?\d+$/, '')
+    .length;
+
+}
+
+
+function formatForDisplay(raw){
+
+  if(raw === "Error"){
+    return raw;
   }
 
-  function fitDisplay(){
-    const len = formatForDisplay(display).length;
-    let size;
-    if(len <= 6) size = 52;
-    else if(len <= 9) size = 38;
-    else size = 28;
-    displayEl.style.fontSize = size + 'px';
+  if(/e/i.test(raw)){
+    return raw;
   }
 
-  function updateOpIndicator(){
-    if(operator){
-      opIndicatorEl.textContent = opSymbols[operator];
-      opIndicatorEl.classList.add('show');
-    } else {
-      opIndicatorEl.classList.remove('show');
-    }
+  const negative =
+    raw.startsWith('-');
+
+  const value =
+    negative ? raw.slice(1) : raw;
+
+  const dotIndex =
+    value.indexOf('.');
+
+  const intPart =
+    dotIndex === -1
+      ? value
+      : value.slice(0,dotIndex);
+
+  const decimalPart =
+    dotIndex === -1
+      ? null
+      : value.slice(dotIndex + 1);
+
+  const lastThree =
+    intPart.slice(-3);
+
+  const other =
+    intPart.slice(0,-3);
+
+  let formattedInt =
+    lastThree;
+
+  if(other){
+
+    formattedInt =
+      other.replace(
+        /\B(?=(\d{2})+(?!\d))/g,
+        ','
+      ) + ',' + lastThree;
+
   }
 
-  function updateDisplay(){
-    displayEl.textContent = formatForDisplay(display);
-    fitDisplay();
-    indM.classList.toggle('on', memory !== 0);
-    updateOpIndicator();
+  let result =
+    formattedInt;
+
+  if(decimalPart !== null){
+    result += '.' + decimalPart;
   }
 
-  function bumpStepCount(){
-    stepCount++;
-    stepsCountEl.textContent = stepCount + ' Steps';
+  return negative
+    ? '-' + result
+    : result;
+
+}
+
+
+/* =========================================================
+   DISPLAY SIZE
+========================================================= */
+
+function fitDisplay(){
+
+  const len =
+    formatForDisplay(display).length;
+
+  let size;
+
+  if(len <= 6){
+    size = 52;
+  }
+  else if(len <= 9){
+    size = 38;
+  }
+  else if(len <= 12){
+    size = 32;
+  }
+  else{
+    size = 27;
   }
 
-  // Counts a step only when a NEW operand actually starts being typed —
-  // pressing an operator or equals again with no fresh digits does not count.
-  function markOperandStart(){
-    if(!operandStarted){
-      operandStarted = true;
-      bumpStepCount();
-    }
+  displayEl.style.fontSize =
+    size + 'px';
+
+}
+
+
+/* =========================================================
+   NUMBER FORMAT
+========================================================= */
+
+function formatNum(n){
+
+  if(!Number.isFinite(n)){
+    return "Error";
   }
 
-  function clearSteps(){
-    stepCount = 0;
-    stepsCountEl.textContent = '0 Steps';
+  if(Object.is(n,-0)){
+    n = 0;
   }
 
-  function formatNum(n){
-    if(!isFinite(n)) return "Error";
-    if(Object.is(n, -0)) n = 0;
-    let s;
-    if(Number.isInteger(n) && Math.abs(n) < 1e12){
-      s = String(n);
-    } else {
-      s = parseFloat(n.toPrecision(MAX_DIGITS)).toString();
-    }
-    if(digitCount(s) > MAX_DIGITS){
-      s = n.toExponential(6);
-    }
-    return s;
+  const abs =
+    Math.abs(n);
+
+  if(
+    n !== 0 &&
+    (
+      abs >= 1e12 ||
+      abs < 1e-9
+    )
+  ){
+
+    return n.toExponential(6);
+
   }
 
-  function inputDigit(d){
-    markOperandStart();
-    if(waitingForSecond){
-      display = d;
-      waitingForSecond = false;
-      return;
-    }
-    if(digitCount(display) >= MAX_DIGITS) return;
-    display = (display === "0") ? d : display + d;
+  if(Number.isInteger(n)){
+    return String(n);
   }
 
-  function inputPoint(){
-    markOperandStart();
-    if(waitingForSecond){ display = "0."; waitingForSecond = false; return; }
-    if(!display.includes(".")) display += ".";
+  return parseFloat(
+    n.toPrecision(MAX_DIGITS)
+  ).toString();
+
+}
+
+
+/* =========================================================
+   UI
+========================================================= */
+
+function updateOpIndicator(){
+
+  if(operator){
+
+    opIndicatorEl.textContent =
+      opSymbols[operator];
+
+    opIndicatorEl.classList.add('show');
+
+  }
+  else{
+
+    opIndicatorEl.textContent =
+      '';
+
+    opIndicatorEl.classList.remove('show');
+
   }
 
-  function backspace(){
-    if(waitingForSecond) return;
-    if(display.length <= 1 || (display.length === 2 && display.startsWith("-"))){
-      display = "0";
-    } else {
-      display = display.slice(0, -1);
-    }
+}
+
+
+function updateDisplay(){
+
+  displayEl.textContent =
+    formatForDisplay(display);
+
+  fitDisplay();
+
+  indM.classList.toggle(
+    'on',
+    Math.abs(memory) > Number.EPSILON
+  );
+
+  updateOpIndicator();
+
+}
+
+
+/* =========================================================
+   STEPS
+========================================================= */
+
+function bumpStepCount(){
+
+  stepCount++;
+
+  stepsCountEl.textContent =
+    stepCount + ' Steps';
+
+}
+
+
+function markOperandStart(){
+
+  if(!operandStarted){
+
+    operandStarted = true;
+
+    bumpStepCount();
+
   }
 
-  function allClear(){
-    display = "0";
+}
+
+
+function clearSteps(){
+
+  stepCount = 0;
+
+  stepsCountEl.textContent =
+    '0 Steps';
+
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+function recoverFromError(){
+
+  if(!errorState){
+    return;
+  }
+
+  display = "0";
+
+  firstOperand = null;
+  operator = null;
+
+  waitingForSecond = false;
+  freshOperand = false;
+
+  lastOperator = null;
+  lastOperand = null;
+
+  operandStarted = false;
+
+  justCalculated = false;
+
+  errorState = false;
+
+}
+
+
+function showError(){
+
+  display = "Error";
+
+  errorState = true;
+
+  firstOperand = null;
+  operator = null;
+
+  waitingForSecond = true;
+  freshOperand = false;
+
+  lastOperator = null;
+  lastOperand = null;
+
+  operandStarted = false;
+
+  justCalculated = false;
+
+}
+
+
+/* =========================================================
+   DIGIT INPUT
+========================================================= */
+
+function inputDigit(d){
+
+  if(errorState){
+    recoverFromError();
+  }
+
+
+  /*
+    After "=" a new digit starts a new calculation.
+  */
+
+  if(justCalculated){
+
+    display = d;
+
     firstOperand = null;
     operator = null;
+
     waitingForSecond = false;
+    freshOperand = false;
+
     lastOperator = null;
     lastOperand = null;
+
+    justCalculated = false;
+
     operandStarted = false;
-    clearSteps();
+
+    markOperandStart();
+
+    return;
+
   }
 
-  function plusMinus(){
-    if(display === "0") return;
-    display = display.startsWith("-") ? display.slice(1) : "-" + display;
+
+  markOperandStart();
+
+
+  /*
+    After operator / √ / % / MRC,
+    a digit replaces the display.
+  */
+
+  if(waitingForSecond){
+
+    display = d;
+
+    waitingForSecond = false;
+    freshOperand = false;
+
+    return;
+
   }
 
-  function sqrtFn(){
-    const val = Math.sqrt(parseFloat(display));
-    display = formatNum(val);
+
+  if(display === "0"){
+
+    display = d;
+
+    return;
+
   }
 
-  // % just turns the number currently being typed into its /100 fraction
-  // (e.g. 10 -> 0.1). It does NOT touch the pending operator or first
-  // number — so "500 × 10 %" shows 0.1, and only "=" computes 500 × 0.1 = 50.
-  function percentFn(){
-    const cur = parseFloat(display);
-    display = formatNum(cur / 100);
+
+  if(digitCount(display) >= MAX_DIGITS){
+
+    return;
+
   }
 
-  function chooseOperator(op){
-    const inputVal = parseFloat(display);
-    if(operator && waitingForSecond){
-      operator = op;
-      return;
-    }
-    if(firstOperand === null){
-      firstOperand = inputVal;
-    } else if(operator){
-      firstOperand = compute(firstOperand, inputVal, operator);
-      display = formatNum(firstOperand);
-    }
-    operator = op;
-    waitingForSecond = true;
-    operandStarted = false;
-    lastOperator = null;
-    lastOperand = null;
+
+  display += d;
+
+}
+
+
+/* =========================================================
+   DECIMAL
+========================================================= */
+
+function inputPoint(){
+
+  if(errorState){
+    recoverFromError();
   }
 
-  function compute(a, b, op){
-    switch(op){
-      case 'add': return a + b;
-      case 'subtract': return a - b;
-      case 'multiply': return a * b;
-      case 'divide': return b === 0 ? NaN : a / b;
-      default: return b;
-    }
-  }
 
-  // Chain-equals / constant calculation: 2 × = = = = repeats ×2 each time.
-  // Special case: n ÷ = (no second number typed) gives the reciprocal 1/n,
-  // not n÷n=1. Repeating "=" after that keeps dividing by the original n.
-  function equals(){
-    bumpStepCount(); // every "=" press counts as a step
-    let result;
-    let a = null, b = null, opUsed = null;
-    if(operator){
-      const blankSecond = waitingForSecond;
-      const inputVal = blankSecond ? firstOperand : parseFloat(display);
-      lastOperator = operator;
-      lastOperand = inputVal;
-      a = firstOperand; b = inputVal; opUsed = operator;
-      if(opUsed === 'divide' && blankSecond){
-        result = (firstOperand === 0) ? NaN : 1 / firstOperand;
-      } else {
-        result = compute(a, b, opUsed);
-      }
-    } else if(lastOperator){
-      a = parseFloat(display); b = lastOperand; opUsed = lastOperator;
-      result = compute(a, b, opUsed);
-    } else {
-      result = parseFloat(display);
-    }
-    display = formatNum(result);
-    firstOperand = result;
+  if(justCalculated){
+
+    display = "0.";
+
+    firstOperand = null;
     operator = null;
-    waitingForSecond = true;
+
+    waitingForSecond = false;
+    freshOperand = false;
+
+    lastOperator = null;
+    lastOperand = null;
+
+    justCalculated = false;
+
     operandStarted = false;
+
+    markOperandStart();
+
+    return;
+
   }
 
-  // MRC: 1st tap = recall memory to display. 2nd (consecutive) tap = paste the
-  // same recalled result again, then clear memory.
-  function mrc(){
-    if(lastAction === 'mrc'){
-      display = formatNum(memory); // paste result
-      memory = 0;                  // then clear memory
-      lastAction = null;
-    } else {
-      display = formatNum(memory); // recall result
-      waitingForSecond = true;
-      operandStarted = false;
-      lastAction = 'mrc';
+
+  markOperandStart();
+
+
+  if(waitingForSecond){
+
+    display = "0.";
+
+    waitingForSecond = false;
+    freshOperand = false;
+
+    return;
+
+  }
+
+
+  if(!display.includes('.')){
+
+    display += ".";
+
+  }
+
+}
+
+
+/* =========================================================
+   BACKSPACE
+========================================================= */
+
+function backspace(){
+
+  if(errorState){
+
+    recoverFromError();
+
+    return;
+
+  }
+
+  if(justCalculated){
+
+    display = "0";
+    justCalculated = false;
+
+    return;
+
+  }
+
+  if(waitingForSecond){
+
+    return;
+
+  }
+
+
+  if(
+    display.length <= 1 ||
+    (
+      display.length === 2 &&
+      display.startsWith('-')
+    )
+  ){
+
+    display = "0";
+
+  }
+  else{
+
+    display =
+      display.slice(0,-1);
+
+  }
+
+}
+
+
+/* =========================================================
+   ALL CLEAR
+========================================================= */
+
+function allClear(){
+
+  display = "0";
+
+  firstOperand = null;
+  operator = null;
+
+  waitingForSecond = false;
+  freshOperand = false;
+
+  lastOperator = null;
+  lastOperand = null;
+
+  operandStarted = false;
+
+  justCalculated = false;
+
+  errorState = false;
+
+  clearSteps();
+
+}
+
+
+/* =========================================================
+   PLUS / MINUS
+========================================================= */
+
+function plusMinus(){
+
+  if(errorState){
+    recoverFromError();
+  }
+
+
+  /*
+    If operator is waiting and no second operand exists,
+    create a negative zero as the pending operand.
+
+    Example:
+    400 + +/- 600 =
+    -> 400 + (-600)
+    -> -200
+  */
+
+  if(
+    waitingForSecond &&
+    freshOperand
+  ){
+
+    display = "-0";
+
+    waitingForSecond = false;
+    freshOperand = false;
+
+    operandStarted = false;
+
+    return;
+
+  }
+
+
+  if(
+    display === "0" ||
+    display === "Error"
+  ){
+
+    return;
+
+  }
+
+
+  if(display === "-0"){
+
+    display = "0";
+
+    return;
+
+  }
+
+
+  display =
+    display.startsWith('-')
+      ? display.slice(1)
+      : '-' + display;
+
+}
+
+
+/* =========================================================
+   SQUARE ROOT
+========================================================= */
+
+function sqrtFn(){
+
+  if(errorState){
+    recoverFromError();
+  }
+
+
+  const value =
+    Number(display);
+
+  if(!Number.isFinite(value)){
+
+    showError();
+
+    return;
+
+  }
+
+
+  if(value < 0){
+
+    showError();
+
+    return;
+
+  }
+
+
+  const result =
+    Math.sqrt(value);
+
+
+  display =
+    formatNum(result);
+
+
+  /*
+    IMPORTANT:
+
+    √ creates a REAL operand.
+
+    So:
+    5 - 9 √ =
+    becomes
+    5 - 3 =
+    -> 2
+
+    We keep waitingForSecond TRUE so typing a new
+    digit can replace the result, but freshOperand
+    is FALSE so "=" uses the √ result.
+  */
+
+  waitingForSecond = true;
+
+  freshOperand = false;
+
+  justCalculated = false;
+
+  operandStarted = true;
+
+}
+
+
+/* =========================================================
+   PERCENT
+========================================================= */
+
+function percentFn(){
+
+  if(errorState){
+    recoverFromError();
+  }
+
+
+  const current =
+    Number(display);
+
+  if(!Number.isFinite(current)){
+
+    showError();
+
+    return;
+
+  }
+
+
+  let result;
+
+
+  /*
+    + / -
+
+    1000 + 50% = 1500
+    1000 - 10% = 900
+  */
+
+  if(
+    (
+      operator === 'add' ||
+      operator === 'subtract'
+    ) &&
+    firstOperand !== null
+  ){
+
+    result =
+      firstOperand *
+      (current / 100);
+
+  }
+
+  /*
+    × / ÷
+
+    500 × 10% = 50
+    500 ÷ 10% = 5000
+  */
+
+  else{
+
+    result =
+      current / 100;
+
+  }
+
+
+  if(!Number.isFinite(result)){
+
+    showError();
+
+    return;
+
+  }
+
+
+  display =
+    formatNum(result);
+
+  /*
+    % also creates a real operand.
+  */
+
+  waitingForSecond = true;
+
+  freshOperand = false;
+
+  justCalculated = false;
+
+  operandStarted = true;
+
+}
+
+
+/* =========================================================
+   OPERATOR
+========================================================= */
+
+function chooseOperator(op){
+
+  if(errorState){
+    recoverFromError();
+  }
+
+
+  /*
+    If the previous operation was completed with "=",
+    continue from the result.
+
+    Example:
+    5 = + 3 =
+
+    should work as:
+    5 + 3
+  */
+
+  if(justCalculated){
+
+    firstOperand =
+      Number(display);
+
+    justCalculated = false;
+
+    lastOperator = null;
+    lastOperand = null;
+
+  }
+
+
+  const inputVal =
+    Number(display);
+
+
+  if(!Number.isFinite(inputVal)){
+
+    showError();
+
+    return;
+
+  }
+
+
+  /*
+    Change operator before entering second operand.
+
+    10 + ×
+
+    becomes:
+
+    10 ×
+  */
+
+  if(
+    operator &&
+    freshOperand
+  ){
+
+    operator = op;
+
+    return;
+
+  }
+
+
+  /*
+    First operator.
+  */
+
+  if(firstOperand === null){
+
+    firstOperand =
+      inputVal;
+
+  }
+
+  /*
+    Chain calculation.
+
+    Example:
+    10 + 20 +
+    -> 30 +
+  */
+
+  else if(operator){
+
+    const result =
+      compute(
+        firstOperand,
+        inputVal,
+        operator
+      );
+
+
+    if(!Number.isFinite(result)){
+
+      showError();
+
+      return;
+
     }
+
+
+    firstOperand =
+      result;
+
+    display =
+      formatNum(result);
+
   }
 
-  function mplus(){
-    memory += parseFloat(display);
+
+  operator =
+    op;
+
+  waitingForSecond =
+    true;
+
+  freshOperand =
+    true;
+
+  operandStarted =
+    false;
+
+  lastOperator = null;
+  lastOperand = null;
+
+}
+
+
+/* =========================================================
+   COMPUTE
+========================================================= */
+
+function compute(a,b,op){
+
+  if(
+    !Number.isFinite(a) ||
+    !Number.isFinite(b)
+  ){
+
+    return NaN;
+
+  }
+
+
+  switch(op){
+
+    case 'add':
+      return a + b;
+
+    case 'subtract':
+      return a - b;
+
+    case 'multiply':
+      return a * b;
+
+    case 'divide':
+
+      if(b === 0){
+        return NaN;
+      }
+
+      return a / b;
+
+    default:
+      return b;
+
+  }
+
+}
+
+
+/* =========================================================
+   EQUALS
+========================================================= */
+
+function equals(){
+
+  bumpStepCount();
+
+
+  if(errorState){
+
+    return;
+
+  }
+
+
+  let result;
+
+
+  /*
+    PENDING OPERATOR
+  */
+
+  if(operator){
+
+    /*
+      If freshOperand is TRUE:
+      no real second operand exists.
+
+      Example:
+      5 + =
+      -> 10
+
+      But after √:
+      5 - 9 √ =
+      freshOperand is FALSE,
+      so 3 is correctly used.
+    */
+
+    const blankSecond =
+      freshOperand;
+
+
+    const inputVal =
+      blankSecond
+        ? firstOperand
+        : Number(display);
+
+
+    if(!Number.isFinite(inputVal)){
+
+      showError();
+
+      return;
+
+    }
+
+
+    lastOperator =
+      operator;
+
+    lastOperand =
+      inputVal;
+
+
+    /*
+      Special:
+      5 ÷ =
+      -> 1/5
+    */
+
+    if(
+      operator === 'divide' &&
+      blankSecond
+    ){
+
+      if(firstOperand === 0){
+
+        showError();
+
+        return;
+
+      }
+
+      result =
+        1 / firstOperand;
+
+    }
+    else{
+
+      result =
+        compute(
+          firstOperand,
+          inputVal,
+          operator
+        );
+
+    }
+
+  }
+
+
+  /*
+    REPEATED EQUALS
+
+    2 × 3 =
+    6
+
+    =
+    18
+
+    =
+    54
+  */
+
+  else if(lastOperator){
+
+    const current =
+      Number(display);
+
+
+    if(!Number.isFinite(current)){
+
+      showError();
+
+      return;
+
+    }
+
+
+    result =
+      compute(
+        current,
+        lastOperand,
+        lastOperator
+      );
+
+  }
+
+
+  /*
+    NO OPERATOR
+  */
+
+  else{
+
+    result =
+      Number(display);
+
+  }
+
+
+  if(!Number.isFinite(result)){
+
+    showError();
+
+    return;
+
+  }
+
+
+  display =
+    formatNum(result);
+
+  firstOperand =
+    result;
+
+  operator =
+    null;
+
+  waitingForSecond =
+    true;
+
+  freshOperand =
+    false;
+
+  operandStarted =
+    false;
+
+  justCalculated =
+    true;
+
+}
+
+
+/* =========================================================
+   MEMORY PLUS
+========================================================= */
+
+function mplus(){
+
+  if(errorState){
+    recoverFromError();
+  }
+
+
+  const value =
+    Number(display);
+
+
+  if(!Number.isFinite(value)){
+
+    return;
+
+  }
+
+
+  memory += value;
+
+
+  if(Math.abs(memory) < Number.EPSILON){
+
+    memory = 0;
+
+  }
+
+
+  waitingForSecond = true;
+  freshOperand = false;
+
+  operandStarted = false;
+
+  justCalculated = false;
+
+}
+
+
+/* =========================================================
+   MEMORY MINUS
+========================================================= */
+
+function mminus(){
+
+  if(errorState){
+    recoverFromError();
+  }
+
+
+  const value =
+    Number(display);
+
+
+  if(!Number.isFinite(value)){
+
+    return;
+
+  }
+
+
+  memory -= value;
+
+
+  if(Math.abs(memory) < Number.EPSILON){
+
+    memory = 0;
+
+  }
+
+
+  waitingForSecond = true;
+  freshOperand = false;
+
+  operandStarted = false;
+
+  justCalculated = false;
+
+}
+
+
+/* =========================================================
+   MRC
+========================================================= */
+
+function mrc(){
+
+  /*
+    First tap:
+    recall memory.
+
+    Second consecutive tap:
+    clear memory.
+  */
+
+  if(lastAction === 'mrc'){
+
+    memory = 0;
+
+    display = "0";
+
     waitingForSecond = true;
+    freshOperand = false;
+
+    operandStarted = false;
+
+    justCalculated = false;
+
+    lastAction = null;
+
+    return;
+
   }
 
-  function mminus(){
-    memory -= parseFloat(display);
-    waitingForSecond = true;
+
+  display =
+    formatNum(memory);
+
+  waitingForSecond = true;
+  freshOperand = false;
+
+  operandStarted = false;
+
+  justCalculated = false;
+
+  lastAction = 'mrc';
+
+}
+
+
+/* =========================================================
+   HANDLER
+========================================================= */
+
+function handle(fn){
+
+  switch(fn){
+
+    case 'ac':
+      allClear();
+      break;
+
+    case 'backspace':
+      backspace();
+      break;
+
+    case 'plusminus':
+      plusMinus();
+      break;
+
+    case 'sqrt':
+      sqrtFn();
+      break;
+
+    case 'percent':
+      percentFn();
+      break;
+
+    case 'add':
+      chooseOperator('add');
+      break;
+
+    case 'subtract':
+      chooseOperator('subtract');
+      break;
+
+    case 'multiply':
+      chooseOperator('multiply');
+      break;
+
+    case 'divide':
+      chooseOperator('divide');
+      break;
+
+    case 'equals':
+      equals();
+      break;
+
+    case 'mrc':
+      mrc();
+      break;
+
+    case 'mplus':
+      mplus();
+      break;
+
+    case 'mminus':
+      mminus();
+      break;
+
+    case 'point':
+      inputPoint();
+      break;
+
   }
 
-  function handle(fn){
-    switch(fn){
-      case 'ac': allClear(); break;
-      case 'backspace': backspace(); break;
-      case 'plusminus': plusMinus(); break;
-      case 'sqrt': sqrtFn(); break;
-      case 'percent': percentFn(); break;
-      case 'add': chooseOperator('add'); break;
-      case 'subtract': chooseOperator('subtract'); break;
-      case 'multiply': chooseOperator('multiply'); break;
-      case 'divide': chooseOperator('divide'); break;
-      case 'equals': equals(); break;
-      case 'mrc': mrc(); break;
-      case 'mplus': mplus(); break;
-      case 'mminus': mminus(); break;
-      case 'point': inputPoint(); break;
-    }
-    if(fn !== 'mrc'){
-      lastAction = fn;
-    }
-    updateDisplay();
+
+  if(fn !== 'mrc'){
+
+    lastAction = fn;
+
   }
 
-  document.querySelectorAll('button[data-digit]').forEach(btn=>{
-    btn.addEventListener('pointerdown', (e)=>{
-      e.preventDefault();
-      feedback();
-      inputDigit(btn.dataset.digit);
-      lastAction = 'digit';
-      updateDisplay();
-    });
-  });
-
-  document.querySelectorAll('button[data-fn]').forEach(btn=>{
-    btn.addEventListener('pointerdown', (e)=>{
-      e.preventDefault();
-      feedback();
-      handle(btn.dataset.fn);
-    });
-  });
 
   updateDisplay();
-})();
+
+}
+
+
+/* =========================================================
+   BUTTON EVENTS
+========================================================= */
+
+document
+  .querySelectorAll('button[data-digit]')
+  .forEach(btn => {
+
+    btn.addEventListener(
+      'pointerdown',
+      function(e){
+
+        e.preventDefault();
+
+        feedback();
+
+        inputDigit(
+          btn.dataset.digit
+        );
+
+        lastAction = 'digit';
+
+        updateDisplay();
+
+      },
+      {
+        passive:false
+      }
+    );
+
+  });
+
+
+document
+  .querySelectorAll('button[data-fn]')
+  .forEach(btn => {
+
+    btn.addEventListener(
+      'pointerdown',
+      function(e){
+
+        e.preventDefault();
+
+        feedback();
+
+        handle(
+          btn.dataset.fn
+        );
+
+      },
+      {
+        passive:false
+      }
+    );
+
+  });
+
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+document.addEventListener(
+  'keydown',
+  function(e){
+
+    if(
+      e.ctrlKey ||
+      e.altKey ||
+      e.metaKey
+    ){
+
+      return;
+
+    }
+
+
+    const key =
+      e.key;
+
+
+    if(/^[0-9]$/.test(key)){
+
+      e.preventDefault();
+
+      feedback();
+
+      inputDigit(key);
+
+      lastAction = 'digit';
+
+      updateDisplay();
+
+      return;
+
+    }
+
+
+    if(
+      key === '.' ||
+      key === ','
+    ){
+
+      e.preventDefault();
+
+      inputPoint();
+
+      lastAction = 'point';
+
+      updateDisplay();
+
+      return;
+
+    }
+
+
+    if(key === '+'){
+
+      e.preventDefault();
+
+      handle('add');
+
+      return;
+
+    }
+
+
+    if(key === '-'){
+
+      e.preventDefault();
+
+      handle('subtract');
+
+      return;
+
+    }
+
+
+    if(key === '*'){
+
+      e.preventDefault();
+
+      handle('multiply');
+
+      return;
+
+    }
+
+
+    if(key === '/'){
+
+      e.preventDefault();
+
+      handle('divide');
+
+      return;
+
+    }
+
+
+    if(
+      key === '=' ||
+      key === 'Enter'
+    ){
+
+      e.preventDefault();
+
+      handle('equals');
+
+      return;
+
+    }
+
+
+    if(key === 'Backspace'){
+
+      e.preventDefault();
+
+      handle('backspace');
+
+      return;
+
+    }
+
+
+    if(key === 'Escape'){
+
+      e.preventDefault();
+
+      handle('ac');
+
+      return;
+
+    }
+
+
+    if(key === '%'){
+
+      e.preventDefault();
+
+      handle('percent');
+
+      return;
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+updateDisplay();
+
+
+/* =========================================================
+   SERVICE WORKER
+========================================================= */
 
 if('serviceWorker' in navigator){
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
-  });
+
+  window.addEventListener(
+    'load',
+    function(){
+
+      navigator.serviceWorker
+        .register('./sw.js')
+        .catch(function(){});
+
+    }
+  );
+
 }
+
+})();
 </script>
 
 </body>
